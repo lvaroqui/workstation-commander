@@ -8,7 +8,9 @@ async fn main() {
 
     let port = 6666;
 
-    let app = Router::new().route("/shutdown", post(shutdown));
+    let app = Router::new()
+        .route("/shutdown", post(shutdown))
+        .route("/reboot", post(reboot));
 
     let listener = tokio::net::TcpListener::bind(format!("0.0.0.0:{port}"))
         .await
@@ -23,6 +25,17 @@ async fn shutdown() -> String {
         "fake shutdown in debug mode".to_string()
     } else {
         match system_shutdown::shutdown() {
+            Ok(_) => "success".to_string(),
+            Err(e) => e.to_string(),
+        }
+    }
+}
+
+async fn reboot() -> String {
+    if cfg!(debug_assertions) {
+        "fake reboot in debug mode".to_string()
+    } else {
+        match system_shutdown::reboot() {
             Ok(_) => "success".to_string(),
             Err(e) => e.to_string(),
         }
